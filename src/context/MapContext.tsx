@@ -3,9 +3,9 @@ import Geometry, { Type } from "ol/geom/Geometry";
 import Draw from "ol/interaction/Draw";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
-
 import { OSM, Vector } from "ol/source";
-import VectorSource from "ol/source/Vector";
+import WKT from "ol/format/WKT.js";
+
 import {
   createContext,
   ReactNode,
@@ -21,6 +21,7 @@ interface MapContextInterface {
   disableDraw: () => void;
   removeFeature: (id: string | number | undefined) => void;
   features: Feature<Geometry>[];
+  getFeatureWkt: (id: string | number | undefined) => string | undefined;
 }
 
 const defaultValues = {
@@ -29,6 +30,7 @@ const defaultValues = {
   disableDraw: () => null,
   removeFeature: () => null,
   features: [],
+  getFeatureWkt: () => undefined,
 };
 
 interface State {
@@ -111,6 +113,21 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const findFeatureById = (id: string): Feature<Geometry> | undefined => {
+    if (mapRef.current) {
+      const layer = mapRef.current
+        .getLayers()
+        .getArray()
+        .find((layer) => {
+          return layer.get("harrysLayer") === "vectorLayer";
+        });
+      if (layer) {
+        const vectorLayer = layer as VectorLayer;
+        return vectorLayer.getSource()?.getFeatureById(id);
+      }
+    }
+  };
+
   const removeFeature = (id: string | number | undefined) => {
     if (typeof id === "string") {
       if (mapRef.current) {
@@ -126,6 +143,21 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
           vectorLayer.getSource()?.removeFeature(foundFeature);
           dispatch({ type: "REMOVE_FEATURE", payload: id });
         }
+      }
+    }
+  };
+
+  const getFeatureWkt = (
+    id: string | number | undefined,
+  ): string | undefined => {
+    const format = new WKT();
+
+    if (typeof id === "string") {
+      const feature = findFeatureById(id);
+      if (feature) {
+        const write = format.writeFeature(feature);
+        console.log(write);
+        return write;
       }
     }
   };
@@ -162,7 +194,13 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <MapContext.Provider
-      value={{ ...state, enableDraw, disableDraw, removeFeature }}
+      value={{
+        ...state,
+        enableDraw,
+        disableDraw,
+        removeFeature,
+        getFeatureWkt,
+      }}
     >
       {children}
     </MapContext.Provider>
