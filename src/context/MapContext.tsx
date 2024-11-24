@@ -66,7 +66,9 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(mapReducer, initialState);
 
   useEffect(() => {
+    console.log("Creating a map");
     if (!mapRef.current) {
+      console.log("Map does not exist, creating map");
       const tileLayer = new TileLayer({
         source: new OSM(),
       });
@@ -93,14 +95,11 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         }),
       });
 
+      console.log("Finished creating a map");
+      console.log(map);
+      map.setTarget("map");
       mapRef.current = map;
     }
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.setTarget("map");
-      }
-    };
   }, [mapRef]);
 
   const disableDraw = () => {
