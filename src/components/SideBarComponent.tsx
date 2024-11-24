@@ -230,13 +230,19 @@ export const SideBarComponent: React.FC = () => {
             </select>
             <div>
               <h5 style={{ marginBottom: "8px" }}>WKT</h5>
-              <div style={{ overflow: "scroll", marginBottom: "16px" }}>
-                <pre>
-                  <code>
-                    {getFeatureWkt(selectedFeature.getId(), projection)}
-                  </code>
-                </pre>
-              </div>
+              {selectedFeature.getGeometry()?.getType() !== "Circle" ? (
+                <Fragment>
+                  <div style={{ overflow: "scroll", marginBottom: "16px" }}>
+                    <pre>
+                      <code>
+                        {getFeatureWkt(selectedFeature.getId(), projection)}
+                      </code>
+                    </pre>
+                  </div>
+                </Fragment>
+              ) : (
+                <div style={{ marginBottom: "16px" }}>Cannot display WKT </div>
+              )}
             </div>
             <form method="dialog">
               <button>OK</button>
