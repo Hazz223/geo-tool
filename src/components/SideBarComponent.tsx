@@ -131,7 +131,7 @@ export const SideBarComponent: React.FC = () => {
               <div>
                 {features.map((feature, index) => {
                   return (
-                    <div key={feature.getId()}>
+                    <div key={feature.getId()} style={{ margin: "16px" }}>
                       <div>
                         Feature ({index}) {feature.getGeometry()?.getType()}
                       </div>
@@ -211,7 +211,7 @@ export const SideBarComponent: React.FC = () => {
 
       <dialog
         open={dialogOpen}
-        style={{ zIndex: "100", minWidth: "400px", maxWidth: "600px" }}
+        style={{ zIndex: "100", width: "400px", margin: "20vh auto" }}
         onClose={onDialogClose}
       >
         {selectedFeature && (
@@ -229,8 +229,8 @@ export const SideBarComponent: React.FC = () => {
               <option value="EPSG:27700">EPSG:27700</option>
             </select>
             <div>
+              <h5 style={{ marginBottom: "8px" }}>WKT</h5>
               <div style={{ overflow: "scroll", marginBottom: "16px" }}>
-                <h5>WKT</h5>
                 <pre>
                   <code>
                     {getFeatureWkt(selectedFeature.getId(), projection)}
