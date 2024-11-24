@@ -2,6 +2,8 @@ import { Fragment, useContext, useState } from "react";
 import "../App.css";
 import { MapContext } from "../context/MapContext";
 import { FaLocationArrow } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
+import { FaInfoCircle } from "react-icons/fa";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
 import { Projections } from "types";
@@ -82,11 +84,11 @@ export const SideBarComponent: React.FC = () => {
               overflow: "scroll",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-              }}
-            >
+            <div style={{ marginBottom: "16px" }}>
+              <h1>GeoTools</h1>
+              <hr />
+            </div>
+            <div>
               <button
                 onClick={setViewToCurrentLocation}
                 style={{ width: "100%" }}
@@ -99,7 +101,7 @@ export const SideBarComponent: React.FC = () => {
             </div>
             <div>
               <div>
-                <h2>Drawing tools</h2>
+                <h2>Drawing</h2>
                 <select
                   className="form-select"
                   id="type"
@@ -114,16 +116,18 @@ export const SideBarComponent: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div hidden={drawType === "None"} style={{ marginTop: "12px" }}>
+            <div hidden={drawType === "None"} style={{ marginTop: "16px" }}>
               <button style={{ width: "100%" }} onClick={handleDrawDisable}>
                 Stop drawing
               </button>
             </div>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div
+              style={{ display: "flex", flexWrap: "wrap", marginTop: "16px" }}
+            >
               <div style={{ width: "100%" }}>
+                <hr hidden={features.length === 0} />
                 <h2 hidden={features.length === 0}>Features</h2>
               </div>
-
               <div>
                 {features.map((feature, index) => {
                   return (
@@ -131,12 +135,17 @@ export const SideBarComponent: React.FC = () => {
                       <div>
                         Feature ({index}) {feature.getGeometry()?.getType()}
                       </div>
-                      <button onClick={() => selectFeature(feature)}>
-                        Information
-                      </button>
-                      <button onClick={() => handleRemoveFeature(feature)}>
-                        Delete
-                      </button>
+                      <div style={{ marginTop: "16px" }}>
+                        <button
+                          style={{ marginRight: "16px" }}
+                          onClick={() => selectFeature(feature)}
+                        >
+                          <FaInfoCircle />
+                        </button>
+                        <button onClick={() => handleRemoveFeature(feature)}>
+                          <FaTrashAlt />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -146,7 +155,6 @@ export const SideBarComponent: React.FC = () => {
         </div>
         <div
           style={{
-            // width: "100%",
             padding: "16px",
           }}
         >
