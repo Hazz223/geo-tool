@@ -4,6 +4,9 @@ import { MapContext } from "../context/MapContext";
 import { FaLocationArrow } from "react-icons/fa";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
+import { Projections } from "types";
+import mastodonLogo from "../assets/mastodon-logo-purple.svg";
+import blueskyLogo from "../assets/bluesky-logo.svg";
 
 type DrawingType = "None" | "Point" | "LineString" | "Polygon" | "Circle";
 
@@ -19,6 +22,7 @@ export const SideBarComponent: React.FC = () => {
   const [drawType, setDrawType] = useState<DrawingType>("None");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature<Geometry>>();
+  const [projection, setProjection] = useState<Projections>("EPSG:3857");
 
   const handleSelect = (value: DrawingType) => {
     setDrawType(value);
@@ -35,8 +39,6 @@ export const SideBarComponent: React.FC = () => {
   };
 
   const selectFeature = (feature: Feature<Geometry>) => {
-    // const wkt = getFeatureWkt(feature.getId());
-
     setDialogOpen(true);
     setSelectedFeature(feature);
   };
@@ -49,97 +51,191 @@ export const SideBarComponent: React.FC = () => {
     });
   };
 
+  const onDialogClose = () => {
+    setDialogOpen(false);
+    setProjection("EPSG:3857");
+    setSelectedFeature(undefined);
+  };
+
+  const handleRemoveFeature = (feature: Feature<Geometry>) => {
+    removeFeature(feature.getId());
+    setDialogOpen(false);
+    setSelectedFeature(undefined);
+  };
+
   return (
-    <div className="box-30">
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          padding: "16px",
-          gap: "12px",
-        }}
-      >
+    <Fragment>
+      <div className="box-30">
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
+            padding: "16px",
+            gap: "12px",
           }}
         >
-          <button onClick={setViewToCurrentLocation} style={{ width: "100%" }}>
-            <span style={{ marginRight: "20px" }}>Jump to your location</span>
-            <FaLocationArrow />
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <div>
-            <h2>Drawing tools</h2>
-            <select
-              className="form-select"
-              id="type"
-              value={drawType}
-              onChange={(e) => handleSelect(e.target.value as DrawingType)}
+          <div
+            style={{
+              width: "100%",
+              gap: "12px",
+              height: "85vh",
+              overflow: "scroll",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+              }}
             >
-              <option value="None">None</option>
-              <option value="Point">Point</option>
-              <option value="LineString">LineString</option>
-              <option value="Polygon">Polygon</option>
-              <option value="Circle">Circle</option>
-            </select>
-          </div>
-        </div>
-        <div hidden={drawType === "None"}>
-          <button style={{ width: "100%" }} onClick={handleDrawDisable}>
-            Stop drawing
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <div style={{ width: "100%" }}>
-            <h2 hidden={features.length === 0}>Features</h2>
-          </div>
+              <button
+                onClick={setViewToCurrentLocation}
+                style={{ width: "100%" }}
+              >
+                <span style={{ marginRight: "20px" }}>
+                  Jump to your location
+                </span>
+                <FaLocationArrow />
+              </button>
+            </div>
+            <div>
+              <div>
+                <h2>Drawing tools</h2>
+                <select
+                  className="form-select"
+                  id="type"
+                  value={drawType}
+                  onChange={(e) => handleSelect(e.target.value as DrawingType)}
+                >
+                  <option value="None">None</option>
+                  <option value="Point">Point</option>
+                  <option value="LineString">LineString</option>
+                  <option value="Polygon">Polygon</option>
+                  <option value="Circle">Circle</option>
+                </select>
+              </div>
+            </div>
+            <div hidden={drawType === "None"} style={{ marginTop: "12px" }}>
+              <button style={{ width: "100%" }} onClick={handleDrawDisable}>
+                Stop drawing
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <div style={{ width: "100%" }}>
+                <h2 hidden={features.length === 0}>Features</h2>
+              </div>
 
+              <div>
+                {features.map((feature, index) => {
+                  return (
+                    <div key={feature.getId()}>
+                      <div>
+                        Feature ({index}) {feature.getGeometry()?.getType()}
+                      </div>
+                      <button onClick={() => selectFeature(feature)}>
+                        Information
+                      </button>
+                      <button onClick={() => handleRemoveFeature(feature)}>
+                        Delete
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            // width: "100%",
+            padding: "16px",
+          }}
+        >
           <div>
-            {features.map((feature, index) => {
-              return (
-                <div key={feature.getId()}>
-                  <div>
-                    Feature ({index}) {feature.getGeometry()?.getType()}
-                  </div>
-                  <button onClick={() => selectFeature(feature)}>
-                    Information
-                  </button>
-                  <button onClick={() => removeFeature(feature.getId())}>
-                    Delete
-                  </button>
-                </div>
-              );
-            })}
+            <hr />
+          </div>
+          <div>
+            Created by{" "}
+            <a
+              href="https://www.harrywinser.com"
+              color="inherit"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Harry Winser
+            </a>
+            <a
+              href="https://mstdn.social/@hazz223"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src={mastodonLogo}
+                alt="Mastodon Logo"
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  marginLeft: "16px",
+                  alignItems: "center",
+                  justifyContent: "end",
+                }}
+              />
+            </a>
+            <a
+              href="https://bsky.app/profile/harrywinser.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src={blueskyLogo}
+                alt="Bluesky Logo"
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  marginLeft: "16px",
+                  alignItems: "center",
+                  justifyContent: "end",
+                }}
+              />
+            </a>
           </div>
         </div>
       </div>
+
       <dialog
         open={dialogOpen}
         style={{ zIndex: "100", minWidth: "400px", maxWidth: "600px" }}
-        onClose={() => setDialogOpen(false)}
+        onClose={onDialogClose}
       >
         {selectedFeature && (
           <Fragment>
             <h3>Feature {selectedFeature.getGeometry()?.getType()}</h3>
-            <div style={{ wordWrap: "break-word" }}>
-              <h5>WKT </h5>
-              <div style={{ overflow: "scroll" }}>
+            Projection:{" "}
+            <select
+              value={projection}
+              onChange={(e) => {
+                setProjection(e.target.value as Projections);
+              }}
+            >
+              <option value="EPSG:3857">EPSG:3857</option>d
+              <option value="EPSG:4326">EPSG:4326</option>
+              <option value="EPSG:27700">EPSG:27700</option>
+            </select>
+            <div>
+              <div style={{ overflow: "scroll", marginBottom: "16px" }}>
+                <h5>WKT</h5>
                 <pre>
-                  <code style={{ wordWrap: "break-word" }}>
-                    {getFeatureWkt(selectedFeature.getId())}{" "}
+                  <code>
+                    {getFeatureWkt(selectedFeature.getId(), projection)}
                   </code>
                 </pre>
               </div>
             </div>
-
             <form method="dialog">
               <button>OK</button>
             </form>
           </Fragment>
         )}
       </dialog>
-    </div>
+    </Fragment>
   );
 };

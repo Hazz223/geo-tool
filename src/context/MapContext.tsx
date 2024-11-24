@@ -3,8 +3,9 @@ import Geometry, { Type } from "ol/geom/Geometry";
 import Draw from "ol/interaction/Draw";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
-import { OSM, Vector } from "ol/source";
+import { OSM, Source, Vector } from "ol/source";
 import WKT from "ol/format/WKT.js";
+import { register } from "ol/proj/proj4";
 
 import {
   createContext,
@@ -15,6 +16,8 @@ import {
   useRef,
 } from "react";
 import { useGeographic } from "ol/proj";
+import proj4 from "proj4";
+import { Projections } from "types";
 
 interface MapContextInterface {
   map?: Map;
@@ -22,7 +25,10 @@ interface MapContextInterface {
   disableDraw: () => void;
   removeFeature: (id: string | number | undefined) => void;
   features: Feature<Geometry>[];
-  getFeatureWkt: (id: string | number | undefined) => string | undefined;
+  getFeatureWkt: (
+    id: string | number | undefined,
+    projection: Projections,
+  ) => string | undefined;
   zoomToLocation: (lat: number, long: number) => void;
 }
 
@@ -99,7 +105,11 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
       map.setTarget("map");
       useGeographic();
-
+      proj4.defs(
+        "EPSG:27700",
+        "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +datum=OSGB36 +units=m +no_defs",
+      );
+      register(proj4);
       mapRef.current = map;
     }
   }, [mapRef]);
@@ -150,14 +160,24 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
   const getFeatureWkt = (
     id: string | number | undefined,
+    projection: string,
   ): string | undefined => {
-    const format = new WKT();
+    if (mapRef.current) {
+      const format = new WKT();
 
-    if (typeof id === "string") {
-      const feature = findFeatureById(id);
-      if (feature) {
-        const write = format.writeFeature(feature);
-        return write;
+      if (typeof id === "string") {
+        const feature = findFeatureById(id);
+        if (feature) {
+          const sourceProj = mapRef.current.getView().getProjection();
+          const transformedGeometry = feature
+            .getGeometry()
+            ?.clone()
+            .transform(sourceProj, projection);
+          if (transformedGeometry) {
+            return format.writeGeometry(transformedGeometry);
+          }
+          return "unknown";
+        }
       }
     }
   };
