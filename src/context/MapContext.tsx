@@ -14,6 +14,7 @@ import {
   useReducer,
   useRef,
 } from "react";
+import { useGeographic } from "ol/proj";
 
 interface MapContextInterface {
   map?: Map;
@@ -22,6 +23,7 @@ interface MapContextInterface {
   removeFeature: (id: string | number | undefined) => void;
   features: Feature<Geometry>[];
   getFeatureWkt: (id: string | number | undefined) => string | undefined;
+  zoomToLocation: (lat: number, long: number) => void;
 }
 
 const defaultValues = {
@@ -31,6 +33,7 @@ const defaultValues = {
   removeFeature: () => null,
   features: [],
   getFeatureWkt: () => undefined,
+  zoomToLocation: () => undefined,
 };
 
 interface State {
@@ -66,9 +69,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(mapReducer, initialState);
 
   useEffect(() => {
-    console.log("Creating a map");
     if (!mapRef.current) {
-      console.log("Map does not exist, creating map");
       const tileLayer = new TileLayer({
         source: new OSM(),
       });
@@ -93,11 +94,12 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
           center: [0, 0],
           zoom: 2,
         }),
+        controls: [],
       });
 
-      console.log("Finished creating a map");
-      console.log(map);
       map.setTarget("map");
+      useGeographic();
+
       mapRef.current = map;
     }
   }, [mapRef]);
@@ -155,7 +157,6 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
       const feature = findFeatureById(id);
       if (feature) {
         const write = format.writeFeature(feature);
-        console.log(write);
         return write;
       }
     }
@@ -191,6 +192,17 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     [mapRef],
   );
 
+  const zoomToLocation = (lat: number, long: number) => {
+    if (mapRef.current) {
+      const view = new View({
+        center: [long, lat],
+        zoom: 15,
+      });
+
+      mapRef.current.setView(view);
+    }
+  };
+
   return (
     <MapContext.Provider
       value={{
@@ -199,6 +211,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         disableDraw,
         removeFeature,
         getFeatureWkt,
+        zoomToLocation,
       }}
     >
       {children}

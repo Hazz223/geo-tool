@@ -3,8 +3,14 @@ import "../App.css";
 import { MapContext } from "../context/MapContext";
 
 export const SideBarComponent: React.FC = () => {
-  const { enableDraw, disableDraw, features, removeFeature, getFeatureWkt } =
-    useContext(MapContext);
+  const {
+    enableDraw,
+    disableDraw,
+    features,
+    removeFeature,
+    getFeatureWkt,
+    zoomToLocation,
+  } = useContext(MapContext);
 
   const handleSelect = (value: string) => {
     enableDraw(value);
@@ -19,8 +25,17 @@ export const SideBarComponent: React.FC = () => {
     alert(wkt);
   };
 
+  const setViewToCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      console.log(position.coords.latitude);
+      console.log(position.coords.longitude);
+      zoomToLocation(position.coords.latitude, position.coords.longitude);
+    });
+  };
+
   return (
     <div className="box-30">
+      <button onClick={setViewToCurrentLocation}>Jump to your location</button>
       <select
         className="form-select"
         id="type"
