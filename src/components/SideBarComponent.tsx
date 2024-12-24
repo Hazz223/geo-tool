@@ -1,30 +1,26 @@
 import { Fragment, useContext, useState } from "react";
 import "../App.css";
 import { MapContext } from "../context/MapContext";
-import { FaLocationArrow } from "react-icons/fa";
-import { FaTrashAlt } from "react-icons/fa";
-import { FaInfoCircle } from "react-icons/fa";
+import {
+  FaInfoCircle,
+  FaCopy,
+  FaTrashAlt,
+  FaLocationArrow,
+} from "react-icons/fa";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
-import { Projections } from "types";
 import mastodonLogo from "../assets/mastodon-logo-purple.svg";
 import blueskyLogo from "../assets/bluesky-logo.svg";
+import { FeatureDialog } from "./FeatureDialog";
 
 type DrawingType = "None" | "Point" | "LineString" | "Polygon" | "Circle";
 
 export const SideBarComponent: React.FC = () => {
-  const {
-    enableDraw,
-    disableDraw,
-    features,
-    removeFeature,
-    getFeatureWkt,
-    zoomToLocation,
-  } = useContext(MapContext);
+  const { enableDraw, disableDraw, features, removeFeature, zoomToLocation } =
+    useContext(MapContext);
   const [drawType, setDrawType] = useState<DrawingType>("None");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature<Geometry>>();
-  const [projection, setProjection] = useState<Projections>("EPSG:3857");
 
   const handleSelect = (value: DrawingType) => {
     setDrawType(value);
@@ -55,7 +51,7 @@ export const SideBarComponent: React.FC = () => {
 
   const onDialogClose = () => {
     setDialogOpen(false);
-    setProjection("EPSG:3857");
+
     setSelectedFeature(undefined);
   };
 
@@ -150,6 +146,18 @@ export const SideBarComponent: React.FC = () => {
                   );
                 })}
               </div>
+
+              {/* {features.length > 0 && (
+                <div style={{ width: "100%" }}> */}
+              {/* <hr /> */}
+              {/* <h2>Tools</h2>
+                  <div>
+                    <h3>
+                      <FaCopy /> Copy as Feature Collection
+                    </h3>
+                  </div>
+                </div> */}
+              {/* )} */}
             </div>
           </div>
         </div>
@@ -208,48 +216,13 @@ export const SideBarComponent: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <dialog
-        open={dialogOpen}
-        style={{ zIndex: "100", width: "400px", margin: "20vh auto" }}
-        onClose={onDialogClose}
-      >
-        {selectedFeature && (
-          <Fragment>
-            <h3>Feature {selectedFeature.getGeometry()?.getType()}</h3>
-            Projection:{" "}
-            <select
-              value={projection}
-              onChange={(e) => {
-                setProjection(e.target.value as Projections);
-              }}
-            >
-              <option value="EPSG:3857">EPSG:3857</option>d
-              <option value="EPSG:4326">EPSG:4326</option>
-              <option value="EPSG:27700">EPSG:27700</option>
-            </select>
-            <div>
-              <h5 style={{ marginBottom: "8px" }}>WKT</h5>
-              {selectedFeature.getGeometry()?.getType() !== "Circle" ? (
-                <Fragment>
-                  <div style={{ overflow: "scroll", marginBottom: "16px" }}>
-                    <pre>
-                      <code>
-                        {getFeatureWkt(selectedFeature.getId(), projection)}
-                      </code>
-                    </pre>
-                  </div>
-                </Fragment>
-              ) : (
-                <div style={{ marginBottom: "16px" }}>Cannot display WKT </div>
-              )}
-            </div>
-            <form method="dialog">
-              <button>OK</button>
-            </form>
-          </Fragment>
-        )}
-      </dialog>
+      {selectedFeature && (
+        <FeatureDialog
+          open={dialogOpen}
+          onClose={onDialogClose}
+          selectedFeature={selectedFeature}
+        />
+      )}
     </Fragment>
   );
 };

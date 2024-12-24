@@ -4,7 +4,7 @@ import Draw from "ol/interaction/Draw";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { OSM, Source, Vector } from "ol/source";
-import WKT from "ol/format/WKT.js";
+import { WKT, GeoJSON } from "ol/format";
 import { register } from "ol/proj/proj4";
 
 import {
@@ -15,9 +15,12 @@ import {
   useReducer,
   useRef,
 } from "react";
-import { useGeographic } from "ol/proj";
+import { Projection, ProjectionLike, useGeographic } from "ol/proj";
 import proj4 from "proj4";
 import { Projections } from "types";
+import { Point } from "ol/geom";
+import { toPromise } from "ol/functions";
+import { Transform } from "stream";
 
 interface MapContextInterface {
   map?: Map;
@@ -26,6 +29,10 @@ interface MapContextInterface {
   removeFeature: (id: string | number | undefined) => void;
   features: Feature<Geometry>[];
   getFeatureWkt: (
+    id: string | number | undefined,
+    projection: Projections,
+  ) => string | undefined;
+  getFeatureGeoJson: (
     id: string | number | undefined,
     projection: Projections,
   ) => string | undefined;
@@ -39,6 +46,7 @@ const defaultValues = {
   removeFeature: () => null,
   features: [],
   getFeatureWkt: () => undefined,
+  getFeatureGeoJson: () => undefined,
   zoomToLocation: () => undefined,
 };
 
@@ -104,7 +112,6 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
       });
 
       map.setTarget("map");
-      useGeographic();
       proj4.defs(
         "EPSG:27700",
         "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +datum=OSGB36 +units=m +no_defs",
@@ -113,16 +120,6 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
       mapRef.current = map;
     }
   }, [mapRef]);
-
-  const disableDraw = () => {
-    if (mapRef.current) {
-      const found = mapRef.current
-        .getInteractions()
-        .getArray()
-        .find((interaction) => interaction.get("custom"));
-      found && mapRef.current.removeInteraction(found);
-    }
-  };
 
   const findFeatureById = (id: string): Feature<Geometry> | undefined => {
     if (mapRef.current) {
@@ -158,27 +155,76 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const transformFeature = (
+    feature: Feature<Geometry>,
+    sourceProjection: string,
+    toProjection: string,
+  ): Geometry | undefined => {
+    if (sourceProjection !== toProjection) {
+      return feature
+        .getGeometry()
+        ?.clone()
+        .transform(sourceProjection, toProjection);
+    } else {
+      return feature.getGeometry();
+    }
+  };
+
   const getFeatureWkt = (
     id: string | number | undefined,
     projection: string,
   ): string | undefined => {
     if (mapRef.current) {
-      const format = new WKT();
-
       if (typeof id === "string") {
         const feature = findFeatureById(id);
         if (feature) {
           const sourceProj = mapRef.current.getView().getProjection();
-          const transformedGeometry = feature
-            .getGeometry()
-            ?.clone()
-            .transform(sourceProj, projection);
-          if (transformedGeometry) {
-            return format.writeGeometry(transformedGeometry);
+          const transformedGeom = transformFeature(
+            feature,
+            sourceProj.getCode(),
+            projection,
+          );
+          if (transformedGeom) {
+            const format = new WKT();
+            return format.writeGeometry(transformedGeom);
           }
           return "unknown";
         }
       }
+    }
+  };
+
+  const getFeatureGeoJson = (
+    id: string | number | undefined,
+    projection: string,
+  ): string | undefined => {
+    if (mapRef.current) {
+      if (typeof id === "string") {
+        const feature = findFeatureById(id);
+        if (feature) {
+          const sourceProj = mapRef.current.getView().getProjection();
+          const transformedGeom = transformFeature(
+            feature,
+            sourceProj.getCode(),
+            projection,
+          );
+          if (transformedGeom) {
+            const format = new GeoJSON();
+            return format.writeGeometry(transformedGeom);
+          }
+          return "unknown";
+        }
+      }
+    }
+  };
+
+  const disableDraw = () => {
+    if (mapRef.current) {
+      const found = mapRef.current
+        .getInteractions()
+        .getArray()
+        .find((interaction) => interaction.get("custom"));
+      found && mapRef.current.removeInteraction(found);
     }
   };
 
@@ -214,12 +260,21 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
   const zoomToLocation = (lat: number, long: number) => {
     if (mapRef.current) {
-      const view = new View({
-        center: [long, lat],
-        zoom: 15,
-      });
+      const givenLocation = new Point([long, lat]);
 
-      mapRef.current.setView(view);
+      const feature = new Feature(givenLocation);
+      const sourceProj = mapRef.current.getView().getProjection();
+      const transformed = transformFeature(feature, "EPSG:4326", "EPSG:3857");
+
+      if (transformed) {
+        const transformedPoint = transformed as Point;
+
+        const view = new View({
+          center: transformedPoint.getCoordinates(),
+          zoom: 15,
+        });
+        mapRef.current.setView(view);
+      }
     }
   };
 
@@ -231,6 +286,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         disableDraw,
         removeFeature,
         getFeatureWkt,
+        getFeatureGeoJson,
         zoomToLocation,
       }}
     >
