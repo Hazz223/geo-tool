@@ -1,12 +1,7 @@
 import { Fragment, useContext, useState } from "react";
 import "../App.css";
 import { MapContext } from "../context/MapContext";
-import {
-  FaInfoCircle,
-  FaCopy,
-  FaTrashAlt,
-  FaLocationArrow,
-} from "react-icons/fa";
+import { FaInfoCircle, FaTrashAlt, FaLocationArrow } from "react-icons/fa";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
 import mastodonLogo from "../assets/mastodon-logo-purple.svg";

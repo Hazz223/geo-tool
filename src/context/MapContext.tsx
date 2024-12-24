@@ -3,7 +3,7 @@ import Geometry, { Type } from "ol/geom/Geometry";
 import Draw from "ol/interaction/Draw";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
-import { OSM, Source, Vector } from "ol/source";
+import { OSM, Vector } from "ol/source";
 import { WKT, GeoJSON } from "ol/format";
 import { register } from "ol/proj/proj4";
 
@@ -15,12 +15,9 @@ import {
   useReducer,
   useRef,
 } from "react";
-import { Projection, ProjectionLike, useGeographic } from "ol/proj";
 import proj4 from "proj4";
 import { Projections } from "types";
 import { Point } from "ol/geom";
-import { toPromise } from "ol/functions";
-import { Transform } from "stream";
 
 interface MapContextInterface {
   map?: Map;
