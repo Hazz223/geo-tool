@@ -1,12 +1,18 @@
 import { Fragment, useContext, useState } from "react";
 import "../App.css";
 import { MapContext } from "../context/MapContext";
-import { FaInfoCircle, FaTrashAlt, FaLocationArrow } from "react-icons/fa";
+import {
+  FaInfoCircle,
+  FaTrashAlt,
+  FaLocationArrow,
+  FaShareAlt,
+} from "react-icons/fa";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
 import mastodonLogo from "../assets/mastodon-logo-purple.svg";
 import blueskyLogo from "../assets/bluesky-logo.svg";
 import { FeatureDialog } from "./FeatureDialog";
+import { AboutDialog } from "./AboutDialog";
 
 type DrawingType = "None" | "Point" | "LineString" | "Polygon" | "Circle";
 
@@ -16,6 +22,7 @@ export const SideBarComponent: React.FC = () => {
   const [drawType, setDrawType] = useState<DrawingType>("None");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature<Geometry>>();
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const handleSelect = (value: DrawingType) => {
     setDrawType(value);
@@ -48,6 +55,10 @@ export const SideBarComponent: React.FC = () => {
     setDialogOpen(false);
 
     setSelectedFeature(undefined);
+  };
+
+  const onAboutClose = () => {
+    setAboutOpen(false);
   };
 
   const handleRemoveFeature = (feature: Feature<Geometry>) => {
@@ -164,8 +175,12 @@ export const SideBarComponent: React.FC = () => {
           <div>
             <hr />
           </div>
+
           <div>
-            Created by{" "}
+            <a onClick={() => setAboutOpen(true)} style={{ cursor: "pointer" }}>
+              About{" "}
+            </a>
+            | Created by{" "}
             <a
               href="https://www.harrywinser.com"
               color="inherit"
@@ -208,9 +223,28 @@ export const SideBarComponent: React.FC = () => {
                 }}
               />
             </a>
+            <a
+              href="https://shareopenly.org/share/?url=geo.harrywinser.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <FaShareAlt
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  marginLeft: "16px",
+                  alignItems: "center",
+                  justifyContent: "end",
+                  color: "#fbfbfe",
+                }}
+              />
+            </a>
           </div>
         </div>
       </div>
+
+      <AboutDialog open={aboutOpen} onClose={onAboutClose} />
+
       {selectedFeature && (
         <FeatureDialog
           open={dialogOpen}
