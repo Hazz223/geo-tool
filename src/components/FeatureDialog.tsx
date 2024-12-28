@@ -28,7 +28,15 @@ export const FeatureDialog: React.FC<Props> = ({
   return (
     <dialog
       open={open}
-      style={{ zIndex: "100", width: "400px", margin: "20vh auto" }}
+      style={{
+        zIndex: "1000",
+        width: "400px",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        margin: 0,
+        position: "fixed",
+      }}
       onClose={onClose}
     >
       {selectedFeature && (
