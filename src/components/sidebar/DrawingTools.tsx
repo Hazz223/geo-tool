@@ -1,8 +1,7 @@
 import { MapContext } from "context/MapContext";
 import { useContext, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
-
-type DrawingType = "None" | "Point" | "LineString" | "Polygon" | "Circle";
+import { DrawingType } from "types";
 
 export const DrawingTools = () => {
   const [drawType, setDrawType] = useState<DrawingType>("None");

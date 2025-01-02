@@ -7,7 +7,12 @@ export const Location: React.FC = () => {
 
   const setViewToCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition((position) => {
-      zoomToLocation(position.coords.latitude, position.coords.longitude);
+      // needs to be this way around - for "reasons".
+      zoomToLocation(
+        position.coords.longitude,
+        position.coords.latitude,
+        "EPSG:4326",
+      );
     });
   };
 

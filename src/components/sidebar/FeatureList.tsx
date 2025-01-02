@@ -4,9 +4,10 @@ import { Feature } from "ol";
 import { Geometry } from "ol/geom";
 import { Fragment, useContext, useState } from "react";
 import { FaInfoCircle, FaTrashAlt } from "react-icons/fa";
+import { FaLocationCrosshairs } from "react-icons/fa6";
 
 export const FeatureList: React.FC = () => {
-  const { features, removeFeature } = useContext(MapContext);
+  const { features, removeFeature, zoomToFeature } = useContext(MapContext);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature<Geometry>>();
 
@@ -26,6 +27,10 @@ export const FeatureList: React.FC = () => {
     setSelectedFeature(undefined);
   };
 
+  const onFeatureZoom = (feature: Feature<Geometry>) => {
+    zoomToFeature(feature.getId());
+  };
+
   return (
     <Fragment>
       <div style={{ display: "flex", flexWrap: "wrap", marginTop: "16px" }}>
@@ -41,6 +46,12 @@ export const FeatureList: React.FC = () => {
                   Feature ({index}) {feature.getGeometry()?.getType()}
                 </div>
                 <div style={{ marginTop: "16px" }}>
+                  <button
+                    style={{ marginRight: "16px" }}
+                    onClick={() => onFeatureZoom(feature)}
+                  >
+                    <FaLocationCrosshairs />
+                  </button>
                   <button
                     style={{ marginRight: "16px" }}
                     onClick={() => selectFeature(feature)}

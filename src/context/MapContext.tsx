@@ -6,7 +6,6 @@ import VectorLayer from "ol/layer/Vector";
 import { OSM, Vector } from "ol/source";
 import { WKT, GeoJSON } from "ol/format";
 import { register } from "ol/proj/proj4";
-
 import {
   createContext,
   ReactNode,
@@ -16,8 +15,9 @@ import {
   useRef,
 } from "react";
 import proj4 from "proj4";
-import { Projections } from "types";
+import { Projection } from "types";
 import { Point } from "ol/geom";
+import { getCenter } from "ol/extent";
 
 interface MapContextInterface {
   map?: Map;
@@ -27,13 +27,14 @@ interface MapContextInterface {
   features: Feature<Geometry>[];
   getFeatureWkt: (
     id: string | number | undefined,
-    projection: Projections,
+    projection: Projection,
   ) => string | undefined;
   getFeatureGeoJson: (
     id: string | number | undefined,
-    projection: Projections,
+    projection: Projection,
   ) => string | undefined;
-  zoomToLocation: (lat: number, long: number) => void;
+  zoomToLocation: (lat: number, long: number, projection: Projection) => void;
+  zoomToFeature: (id: string | number | undefined) => void;
 }
 
 const defaultValues = {
@@ -45,6 +46,7 @@ const defaultValues = {
   getFeatureWkt: () => undefined,
   getFeatureGeoJson: () => undefined,
   zoomToLocation: () => undefined,
+  zoomToFeature: () => undefined,
 };
 
 interface State {
@@ -152,16 +154,17 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const transformFeature = (
-    feature: Feature<Geometry>,
+  const transformFeature = <T extends Geometry>(
+    feature: Feature<T>,
     sourceProjection: string,
     toProjection: string,
-  ): Geometry | undefined => {
+  ): T | undefined => {
     if (sourceProjection !== toProjection) {
-      return feature
+      const result = feature
         .getGeometry()
         ?.clone()
         .transform(sourceProjection, toProjection);
+      return result as T;
     } else {
       return feature.getGeometry();
     }
@@ -255,22 +258,39 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     [mapRef],
   );
 
-  const zoomToLocation = (lat: number, long: number) => {
+  const zoomToLocation = (
+    lat: number,
+    long: number,
+    projection: Projection,
+  ) => {
     if (mapRef.current) {
-      const givenLocation = new Point([long, lat]);
+      let toUse: Point | undefined = new Point([lat, long]);
 
-      const feature = new Feature(givenLocation);
-      const sourceProj = mapRef.current.getView().getProjection();
-      const transformed = transformFeature(feature, "EPSG:4326", "EPSG:3857");
+      if (projection !== "EPSG:3857") {
+        const feature = new Feature(toUse);
+        console.log("Transforming");
+        toUse = transformFeature(feature, projection, "EPSG:3857");
+      }
 
-      if (transformed) {
-        const transformedPoint = transformed as Point;
-
+      if (toUse) {
         const view = new View({
-          center: transformedPoint.getCoordinates(),
+          center: toUse.getCoordinates(),
           zoom: 15,
         });
         mapRef.current.setView(view);
+      }
+    }
+  };
+
+  const zoomToFeature = (id: string | number | undefined) => {
+    if (mapRef.current) {
+      if (typeof id === "string") {
+        const feature = findFeatureById(id);
+        if (feature && feature.getGeometry()) {
+          const extent = feature.getGeometry()?.getExtent();
+          const center = extent && getCenter(extent);
+          center && zoomToLocation(center[0], center[1], "EPSG:3857");
+        }
       }
     }
   };
@@ -285,6 +305,7 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         getFeatureWkt,
         getFeatureGeoJson,
         zoomToLocation,
+        zoomToFeature,
       }}
     >
       {children}
