@@ -42,7 +42,7 @@ export const ViewFeatureCollectionDialog: React.FC<Props> = ({
       }}
       onClose={onClose}
     >
-      <h3 style={{ marginBottom: "8px" }}>Feature Collection (EPSG:4326)</h3>
+      <h3 style={{}}>Feature Collection (EPSG:4326)</h3>
       <div style={{ overflow: "scroll", marginBottom: "16px" }}>
         <pre>
           <code>{JSON.stringify(featureCollection)}</code>
@@ -55,7 +55,10 @@ export const ViewFeatureCollectionDialog: React.FC<Props> = ({
           setCopied(true);
         }}
       />{" "}
-      {copied && "Copied to clipboard"}
+      <div>{copied && "Copied to clipboard"}</div>
+      <span style={{ fontSize: "12px" }}>
+        (Circles won't be included as they're not in the specification)
+      </span>
       <form method="dialog" style={{ marginTop: "16px" }}>
         <button>Close</button>
       </form>
