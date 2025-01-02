@@ -1,13 +1,12 @@
 import { Fragment, useState } from "react";
-import "../App.css";
 import { FaShareAlt } from "react-icons/fa";
-import mastodonLogo from "../assets/mastodon-logo-purple.svg";
-import blueskyLogo from "../assets/bluesky-logo.svg";
-import { AboutDialog } from "./AboutDialog";
-import { Header } from "./sidebar/Header";
-import { Location } from "./sidebar/Location";
-import { DrawingTools } from "./sidebar/DrawingTools";
-import { FeatureList } from "./sidebar/FeatureList";
+import mastodonLogo from "../../assets/mastodon-logo-purple.svg";
+import blueskyLogo from "../../assets/bluesky-logo.svg";
+import { AboutDialog } from "../AboutDialog";
+import { Header } from "./Header";
+import { Location } from "./Location";
+import { DrawingTools } from "./DrawingTools";
+import { FeatureList } from "./FeatureList";
 
 export const SideBarComponent: React.FC = () => {
   const [aboutOpen, setAboutOpen] = useState(false);

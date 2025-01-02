@@ -1,15 +1,18 @@
+import { ViewFeatureCollectionDialog } from "components/dialogs/ViewFeatureCollectionDialog";
 import { FeatureDialog } from "components/FeatureDialog";
 import { MapContext } from "context/MapContext";
 import { Feature } from "ol";
 import { Geometry } from "ol/geom";
 import { Fragment, useContext, useState } from "react";
-import { FaInfoCircle, FaTrashAlt } from "react-icons/fa";
+import { FaCopy, FaInfoCircle, FaTrashAlt } from "react-icons/fa";
 import { FaLocationCrosshairs } from "react-icons/fa6";
 
 export const FeatureList: React.FC = () => {
   const { features, removeFeature, zoomToFeature } = useContext(MapContext);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [selectedFeature, setSelectedFeature] = useState<Feature<Geometry>>();
+  const [viewFeatureCollectionDialog, setViewFeatureCollectionDialog] =
+    useState<boolean>(false);
 
   const selectFeature = (feature: Feature<Geometry>) => {
     setDialogOpen(true);
@@ -65,19 +68,15 @@ export const FeatureList: React.FC = () => {
               </div>
             );
           })}
+          {features.length > 0 && (
+            <button
+              style={{ width: "100%", marginTop: "8px" }}
+              onClick={() => setViewFeatureCollectionDialog(true)}
+            >
+              View as Feature Collection
+            </button>
+          )}
         </div>
-
-        {/* {features.length > 0 && (
-      <div style={{ width: "100%" }}> */}
-        {/* <hr /> */}
-        {/* <h2>Tools</h2>
-        <div>
-          <h3>
-            <FaCopy /> Copy as Feature Collection
-          </h3>
-        </div>
-      </div> */}
-        {/* )} */}
       </div>
       {selectedFeature && (
         <FeatureDialog
@@ -86,6 +85,12 @@ export const FeatureList: React.FC = () => {
           selectedFeature={selectedFeature}
         />
       )}
+
+      <ViewFeatureCollectionDialog
+        open={viewFeatureCollectionDialog}
+        onClose={() => setViewFeatureCollectionDialog(false)}
+        features={features}
+      />
     </Fragment>
   );
 };

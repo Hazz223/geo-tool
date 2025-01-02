@@ -1,6 +1,6 @@
 import "./App.css";
 import { MapComponent } from "./components/MapComponent";
-import { SideBarComponent } from "./components/SideBarComponent";
+import { SideBarComponent } from "./components/sidebar/SideBarComponent";
 import { MapContextProvider } from "./context/MapContext";
 
 function App() {
