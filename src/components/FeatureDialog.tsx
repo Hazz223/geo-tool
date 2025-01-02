@@ -2,7 +2,7 @@ import { MapContext } from "context/MapContext";
 import { Feature } from "ol";
 import { useContext, useState } from "react";
 import { Fragment } from "react/jsx-runtime";
-import { Projections } from "types";
+import { Projection } from "types";
 import { FaCopy } from "react-icons/fa";
 
 interface Props {
@@ -17,7 +17,7 @@ export const FeatureDialog: React.FC<Props> = ({
   selectedFeature,
 }) => {
   const { getFeatureWkt, getFeatureGeoJson } = useContext(MapContext);
-  const [projection, setProjection] = useState<Projections>("EPSG:3857");
+  const [projection, setProjection] = useState<Projection>("EPSG:3857");
   const [copiedWkt, setCopiedWkt] = useState(false);
   const [copiedGeoJson, setCopiedGeoJson] = useState(false);
 
@@ -48,7 +48,7 @@ export const FeatureDialog: React.FC<Props> = ({
           <select
             value={projection}
             onChange={(e) => {
-              setProjection(e.target.value as Projections);
+              setProjection(e.target.value as Projection);
             }}
           >
             <option value="EPSG:3857">EPSG:3857</option>d
