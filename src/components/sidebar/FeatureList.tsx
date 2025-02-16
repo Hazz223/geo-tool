@@ -6,6 +6,8 @@ import { Geometry } from "ol/geom";
 import { Fragment, useContext, useState } from "react";
 import { FaCopy, FaInfoCircle, FaTrashAlt } from "react-icons/fa";
 import { FaLocationCrosshairs } from "react-icons/fa6";
+import { AddFeatureCollection } from "./AddFeatureCollection";
+import { AddFeatureCollectionDialog } from "components/dialogs/AddFeatureCollectionDialog";
 
 export const FeatureList: React.FC = () => {
   const { features, removeFeature, zoomToFeature } = useContext(MapContext);
@@ -73,7 +75,7 @@ export const FeatureList: React.FC = () => {
               style={{ width: "100%", marginTop: "8px" }}
               onClick={() => setViewFeatureCollectionDialog(true)}
             >
-              View as Feature Collection
+              View as feature collection
             </button>
           )}
         </div>

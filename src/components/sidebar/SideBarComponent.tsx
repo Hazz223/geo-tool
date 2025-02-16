@@ -7,6 +7,7 @@ import { Header } from "./Header";
 import { Location } from "./Location";
 import { DrawingTools } from "./DrawingTools";
 import { FeatureList } from "./FeatureList";
+import { AddFeatureCollection } from "./AddFeatureCollection";
 
 export const SideBarComponent: React.FC = () => {
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -38,6 +39,7 @@ export const SideBarComponent: React.FC = () => {
             <Location />
             <DrawingTools />
             <FeatureList />
+            <AddFeatureCollection />
           </div>
         </div>
         <div

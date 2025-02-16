@@ -9,7 +9,10 @@ import { register } from "ol/proj/proj4";
 import {
   createContext,
   ReactNode,
+  Ref,
+  RefObject,
   useCallback,
+  useContext,
   useEffect,
   useReducer,
   useRef,
@@ -18,9 +21,10 @@ import proj4 from "proj4";
 import { Projection } from "types";
 import { Point } from "ol/geom";
 import { getCenter } from "ol/extent";
+import { GeoJSONFeatureCollection } from "ol/format/GeoJSON";
 
 interface MapContextInterface {
-  map?: Map;
+  map?: RefObject<Map | undefined>;
   enableDraw: (type: string) => void;
   disableDraw: () => void;
   removeFeature: (id: string | number | undefined) => void;
@@ -33,6 +37,7 @@ interface MapContextInterface {
     id: string | number | undefined,
     projection: Projection,
   ) => string | undefined;
+  addFeatureCollection: (collection: GeoJSONFeatureCollection) => void;
   zoomToLocation: (lat: number, long: number, projection: Projection) => void;
   zoomToFeature: (id: string | number | undefined) => void;
 }
@@ -47,6 +52,7 @@ const defaultValues = {
   getFeatureGeoJson: () => undefined,
   zoomToLocation: () => undefined,
   zoomToFeature: () => undefined,
+  addFeatureCollection: () => undefined,
 };
 
 interface State {
@@ -295,10 +301,25 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addFeatureCollection = (features: GeoJSONFeatureCollection) => {
+    if (!mapRef.current) return;
+
+    const featureLayer: VectorLayer | undefined = mapRef.current
+      .getLayers()
+      .getArray()
+      .find((layer) => {
+        return layer.get("harrysLayer") === "vectorLayer";
+      }) as VectorLayer | undefined;
+    if (featureLayer && featureLayer.getSource()) {
+      featureLayer.getSource()?.addFeatures(features);
+    }
+  };
+
   return (
     <MapContext.Provider
       value={{
         ...state,
+        map: mapRef,
         enableDraw,
         disableDraw,
         removeFeature,
@@ -306,9 +327,19 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
         getFeatureGeoJson,
         zoomToLocation,
         zoomToFeature,
+        addFeatureCollection,
       }}
     >
       {children}
     </MapContext.Provider>
   );
+};
+
+export const useMap = () => {
+  const mapContext = useContext(MapContext);
+  if (!mapContext) {
+    throw new Error("useMap must be used within a MapContext");
+  }
+
+  return mapContext;
 };
