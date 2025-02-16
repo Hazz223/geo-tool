@@ -15,13 +15,21 @@ export const AddFeatureCollectionDialog: React.FC<Props> = ({
   const [givenGeoJson, setGivenGeoJson] = useState("");
 
   const onSave = () => {
-    console.log(map?.current);
     if (map?.current) {
-      const geoJson = new GeoJSON().readFeatures(givenGeoJson, {
-        featureProjection: map.current.getView().getProjection(),
-      });
-      addFeatureCollection(geoJson);
+      try {
+        const geoJson = new GeoJSON().readFeatures(givenGeoJson, {
+          featureProjection: map.current.getView().getProjection(),
+        });
+        addFeatureCollection(geoJson);
+      } catch (err) {
+        alert("Invalid GeoJSON");
+      }
     }
+  };
+
+  const closed = () => {
+    setGivenGeoJson("");
+    onClose();
   };
 
   return (
@@ -36,7 +44,7 @@ export const AddFeatureCollectionDialog: React.FC<Props> = ({
         margin: 0,
         position: "fixed",
       }}
-      onClose={onClose}
+      onClose={closed}
     >
       <h3>Add Feature Collection (EPSG:4326)</h3>
       <div style={{ marginBottom: "16px", padding: "8px" }}>

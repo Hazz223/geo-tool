@@ -274,7 +274,6 @@ export const MapContextProvider = ({ children }: { children: ReactNode }) => {
 
       if (projection !== "EPSG:3857") {
         const feature = new Feature(toUse);
-        console.log("Transforming");
         toUse = transformFeature(feature, projection, "EPSG:3857");
       }
 
